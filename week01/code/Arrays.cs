@@ -13,7 +13,28 @@ public static class Arrays
         // step by step before you write the code. The plan should be clear enough that it could
         // be implemented by another person.
 
-        return []; // replace this return statement with your own
+
+        // PLAN:
+        // 1. Create an array to hold 'length' items.
+        // 2. Loop from i = 0 to i < length.
+        // 3. For each i, compute number * (i + 1).
+        // 4. Store the result into the array at index i.
+        // 5. Return the array.
+
+
+        //comment 1. Create an array to hold 'length' items.
+        double[] multiples = new double[length];
+
+        //comment 2. Loop from i = 0 to i < length.
+        for (int i = 0; i < length; i++)
+
+        {
+            //comment 3. and 4. For each i, compute number * (i + 1) and store the result into the array at index i.
+            multiples[i] = number * (i + 1);
+
+        }
+        //comment 5. Return the array.
+        return multiples;
     }
 
     /// <summary>
@@ -29,5 +50,35 @@ public static class Arrays
         // Remember: Using comments in your program, write down your process for solving this problem
         // step by step before you write the code. The plan should be clear enough that it could
         // be implemented by another person.
+
+
+
+
+        // PLAN:
+        // 1. Figure out where to split the list by subtracting amount from the list size.
+        // 2. Extract the last 'amount' items (these will move to the front).
+        // 3. Extract the items before the split (these will move after the first part).
+        // 4. Clear the original list so we can rebuild it in rotated order.
+        // 5. Add the last items first.
+        // 6. Add the first items next.
+
+        // 1. Find the index to cut the list
+        int cutIndex = data.Count - amount;
+
+        // 2. Get the last 'amount' elements
+        List<int> rightPart = data.GetRange(
+            cutIndex, amount);
+
+        // 3. Get the first part of the list
+        List<int> leftPart = data.GetRange(0, cutIndex);
+
+        // 4. Clear the original list so we can rebuild it in rotated order.
+        data.Clear();
+
+        // 5. Add the last items first.
+        data.AddRange(rightPart);
+
+        // 6. Add the first items next.
+        data.AddRange(leftPart);
     }
 }
