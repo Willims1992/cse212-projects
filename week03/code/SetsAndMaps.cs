@@ -66,34 +66,6 @@ public static class SetsAndMaps
         return result.ToArray();
 
 
-
-
-
-        //{
-        // if (string.IsNullOrWhiteSpace(w) || w.Length != 2)
-        // continue;
-
-        /// Special case: same-letter words like "aa" never pair with anything else
-        // if (w[0] == w[1])
-        //{
-        // seen.Add(w);
-        // continue;
-        //}
-
-        // Reverse the two-character string
-        //var rev = new string(new[] { w[1], w[0] });
-
-        // If the reverse has already been seen, emit "rev &amp; w"
-        // if (seen.Contains(rev))
-        //{
-        // result.Add($"{rev} &amp; {w}");
-        //}
-
-        // Mark current word as seen
-        //seen.Add(w);
-        //}
-
-        // return result.ToArray();
     }
 
     /// <summary>
