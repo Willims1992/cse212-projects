@@ -1,4 +1,8 @@
+
+
+
 using System.Text.Json;
+using System.Globalization;
 
 public static class SetsAndMaps
 {
@@ -21,8 +25,75 @@ public static class SetsAndMaps
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
     public static string[] FindPairs(string[] words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        //if (words == null || words.Length == 0) return Array.Empty<string>();
+
+        //var seen = new HashSet<string>();
+        // var result = new List<string>();
+
+        //foreach (var w in words)
+
+        if (words == null || words.Length == 0) return Array.Empty<string>();
+
+        var seen = new HashSet<string>();
+        var result = new List<string>();
+
+        foreach (var w in words)
+
+
+        {
+            if (string.IsNullOrWhiteSpace(w) || w.Length != 2)
+                continue;
+
+            // "aa" style words never pair with anything else
+            if (w[0] == w[1])
+            {
+                seen.Add(w);
+                continue;
+            }
+
+
+            var rev = new string(new[] { w[1], w[0] });
+
+            if (seen.Contains(rev))
+            {
+                //  use a single '&' (NOT "&amp;")
+                result.Add($"{rev}&{w}");
+            }
+
+            seen.Add(w);
+        }
+
+        return result.ToArray();
+
+
+
+
+
+        //{
+        // if (string.IsNullOrWhiteSpace(w) || w.Length != 2)
+        // continue;
+
+        /// Special case: same-letter words like "aa" never pair with anything else
+        // if (w[0] == w[1])
+        //{
+        // seen.Add(w);
+        // continue;
+        //}
+
+        // Reverse the two-character string
+        //var rev = new string(new[] { w[1], w[0] });
+
+        // If the reverse has already been seen, emit "rev &amp; w"
+        // if (seen.Contains(rev))
+        //{
+        // result.Add($"{rev} &amp; {w}");
+        //}
+
+        // Mark current word as seen
+        //seen.Add(w);
+        //}
+
+        // return result.ToArray();
     }
 
     /// <summary>
@@ -38,11 +109,25 @@ public static class SetsAndMaps
     /// <returns>fixed array of divisors</returns>
     public static Dictionary<string, int> SummarizeDegrees(string filename)
     {
+
         var degrees = new Dictionary<string, int>();
         foreach (var line in File.ReadLines(filename))
         {
             var fields = line.Split(",");
             // TODO Problem 2 - ADD YOUR CODE HERE
+
+            if (fields.Length <= 3) continue;
+
+            // Keep the degree string exactly as it appears (tests expect specific casing)
+            var degree = fields[3].Trim();
+
+            if (degree.Length == 0) continue;
+
+            if (degrees.ContainsKey(degree))
+                degrees[degree] += 1;
+            else
+                degrees[degree] = 1;
+
         }
 
         return degrees;
@@ -67,7 +152,43 @@ public static class SetsAndMaps
     public static bool IsAnagram(string word1, string word2)
     {
         // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        if (word1 == null || word2 == null) return false;
+
+        // Dictionary<char, int> to track frequency differences
+        var counts = new Dictionary<char, int>();
+
+        // Count characters from word1 (ignoring spaces, ignoring case)
+        for (int i = 0; i < word1.Length; i++)
+        {
+            char c = word1[i];
+            if (c == ' ') continue; // per spec: ignore spaces (not all whitespace)
+
+            c = char.ToUpperInvariant(c);
+
+            if (counts.TryGetValue(c, out int n))
+                counts[c] = n + 1;
+            else
+                counts[c] = 1;
+        }
+
+        // Decrease counts using word2 (ignoring spaces, ignoring case)
+        for (int i = 0; i < word2.Length; i++)
+        {
+            char c = word2[i];
+            if (c == ' ') continue; // per spec
+
+            c = char.ToUpperInvariant(c);
+
+            if (!counts.TryGetValue(c, out int n)) return false; // extra char not in word1
+            n--;
+            if (n == 0) counts.Remove(c);
+            else counts[c] = n;
+        }
+
+        // If all counts balanced out, it's an anagram
+        return counts.Count == 0;
+
+        //return false;
     }
 
     /// <summary>
@@ -101,6 +222,17 @@ public static class SetsAndMaps
         // on those classes so that the call to Deserialize above works properly.
         // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
         // 3. Return an array of these string descriptions.
-        return [];
+
+        return featureCollection.Features
+            .Where(f => f?.Properties != null &&
+                        f.Properties.Mag.HasValue &&
+                        !string.IsNullOrWhiteSpace(f.Properties.Place))
+            .Select(f =>
+                $"{f.Properties.Place} - Mag {f.Properties.Mag.Value.ToString("0.##", CultureInfo.InvariantCulture)}"
+            )
+            .ToArray();
+
+
+            
     }
 }
