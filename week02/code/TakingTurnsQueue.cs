@@ -7,51 +7,70 @@
 /// less than they will stay in the queue forever.  If a person is out of turns then they will 
 /// not be added back into the queue.
 /// </summary>
+using System;
+using System.Collections.Generic;
+
 public class TakingTurnsQueue
 {
-    private readonly PersonQueue _people = new();
+    private class Entry
+    {
+        public Person Person { get; }
+        // null => infinite turns (original Person.Turns <= 0)
+        public int? Remaining { get; set; }
 
-    public int Length => _people.Length;
+        public Entry(Person person)
+        {
+            Person = person ?? throw new ArgumentNullException(nameof(person));
+            Remaining = person.Turns > 0 ? person.Turns : (int?)null;
+        }
+    }
+
+    private readonly Queue<Entry> _queue = new();
 
     /// <summary>
-    /// Add new people to the queue with a name and number of turns
+    /// Number of active people currently in the queue.
     /// </summary>
-    /// <param name="name">Name of the person</param>
-    /// <param name="turns">Number of turns remaining</param>
+    public int Length => _queue.Count;
+
+    /// <summary>
+    /// Enqueue a person by name with the specified number of turns.
+    /// Turns <= 0 are treated as infinite.
+    /// </summary>
     public void AddPerson(string name, int turns)
     {
         var person = new Person(name, turns);
-        _people.Enqueue(person);
+        _queue.Enqueue(new Entry(person));
     }
 
     /// <summary>
-    /// Get the next person in the queue and return them. The person should
-    /// go to the back of the queue again unless the turns variable shows that they 
-    /// have no more turns left.  Note that a turns value of 0 or less means the 
-    /// person has an infinite number of turns.  An error exception is thrown 
-    /// if the queue is empty.
+    /// Dequeue the next person in round-robin order and return them.
+    /// Re-enqueue if they have remaining turns or infinite turns.
+    /// Throws InvalidOperationException("No one in the queue.") if empty.
     /// </summary>
     public Person GetNextPerson()
     {
-        if (_people.IsEmpty())
-        {
+        if (_queue.Count == 0)
             throw new InvalidOperationException("No one in the queue.");
+
+        var entry = _queue.Dequeue();
+        var result = entry.Person;
+
+        if (entry.Remaining == null)
+        {
+            // Infinite: always re-enqueue; never mutate Person.Turns.
+            _queue.Enqueue(entry);
+        }
+        else if (entry.Remaining > 1)
+        {
+            // Consume one and re-enqueue while turns remain.
+            entry.Remaining--;
+            _queue.Enqueue(entry);
         }
         else
         {
-            Person person = _people.Dequeue();
-            if (person.Turns > 1)
-            {
-                person.Turns -= 1;
-                _people.Enqueue(person);
-            }
-
-            return person;
+            // Remaining == 1: last turn; do not re-enqueue.
         }
-    }
 
-    public override string ToString()
-    {
-        return _people.ToString();
+        return result;
     }
 }
