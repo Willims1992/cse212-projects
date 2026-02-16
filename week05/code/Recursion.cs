@@ -15,7 +15,9 @@ public static class Recursion
     public static int SumSquaresRecursive(int n)
     {
         // TODO Start Problem 1
-        return 0;
+        if (n <= 0) 
+            return 0; //base case
+        return n * n + SumSquaresRecursive(n - 1); //recursion case
     }
 
     /// <summary>
@@ -40,6 +42,21 @@ public static class Recursion
     public static void PermutationsChoose(List<string> results, string letters, int size, string word = "")
     {
         // TODO Start Problem 2
+        // Base case: if the built word has reached the requested size, record it
+        if (word.Length == size)
+        {
+            results.Add(word);
+            return;
+        }
+
+        // Recursive case: choose each letter once, remove it from the pool, grow word
+        for (int i = 0; i < letters.Length; i++)
+        {
+            char c = letters[i];
+            // Remove the chosen char so it can't be reused in this permutation
+            string remaining = letters.Substring(0, i) + letters[(i + 1)..];
+            PermutationsChoose(results, remaining, size, word + c);
+        }
     }
 
     /// <summary>
@@ -98,8 +115,21 @@ public static class Recursion
 
         // TODO Start Problem 3
 
-        // Solve using recursion
-        decimal ways = CountWaysToClimb(s - 1) + CountWaysToClimb(s - 2) + CountWaysToClimb(s - 3);
+       // Initialize memo on first call
+        remember ??= new Dictionary<int, decimal>();
+
+        // If cached, return it
+        if (remember.TryGetValue(s, out var cached))
+            return cached;
+
+        // recursive step using memo
+        decimal ways =
+            CountWaysToClimb(s - 1, remember) +
+            CountWaysToClimb(s - 2, remember) +
+            CountWaysToClimb(s - 3, remember);
+
+        // Cache result
+        remember[s] = ways;
         return ways;
     }
 
@@ -119,6 +149,20 @@ public static class Recursion
     public static void WildcardBinary(string pattern, List<string> results)
     {
         // TODO Start Problem 4
+        int idx = pattern.IndexOf('*');
+        if (idx == -1)
+        {
+            // No wildcard left—pattern is concrete
+            results.Add(pattern);
+            return;
+        }
+
+        // Branch: replace this '*' with '0' and '1'
+        string with0 = pattern.Substring(0, idx) + '0' + pattern[(idx + 1)..];
+        string with1 = pattern.Substring(0, idx) + '1' + pattern[(idx + 1)..];
+
+        WildcardBinary(with0, results);
+        WildcardBinary(with1, results);
     }
 
     /// <summary>
@@ -129,14 +173,41 @@ public static class Recursion
     {
         // If this is the first time running the function, then we need
         // to initialize the currPath list.
-        if (currPath == null) {
+        if (currPath == null)
+        {
             currPath = new List<ValueTuple<int, int>>();
         }
-        
+
         // currPath.Add((1,2)); // Use this syntax to add to the current path
 
         // TODO Start Problem 5
         // ADD CODE HERE
+        // Validate the move before committing
+        if (!maze.IsValidMove(currPath, x, y))
+        {
+            return;
+        }
+
+        // Choose: add current cell to the current path
+        currPath.Add((x, y));
+
+        // Goal check: if this is the end, record the path
+        if (maze.IsEnd(x, y))
+        {
+            results.Add(currPath.AsString());
+            // Backtrack
+            currPath.RemoveAt(currPath.Count - 1);
+            return;
+        }
+
+        // Explore 4 directions (Right, Down, Left, Up)
+        SolveMaze(results, maze, x + 1, y, currPath); // Right
+        SolveMaze(results, maze, x, y + 1, currPath); // Down
+        SolveMaze(results, maze, x - 1, y, currPath); // Left
+        SolveMaze(results, maze, x, y - 1, currPath); // Up
+
+        // Un-choose: backtrack
+        currPath.RemoveAt(currPath.Count - 1);
 
         // results.Add(currPath.AsString()); // Use this to add your path to the results array keeping track of complete maze solutions when you find the solution.
     }
